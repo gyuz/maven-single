@@ -1,0 +1,288 @@
+package exercise2;
+
+import java.util.*;
+import java.io.*;
+
+public class Exercise2{	
+	private int row=0;
+	private DataMap keyValueList; 
+	private Scanner input = new Scanner(System.in);
+
+	Exercise2(String filePath){
+		keyValueList = new DataMap(filePath);
+	}	
+	
+	public static void main(String[] args){
+		boolean readSuccess = false;		
+		String filePath = "";
+		if (args.length == 0) {
+			filePath = "/home/ecc/Documents/programs/exercise2/testFile1.txt";
+		}		
+		else{
+				filePath = args[0];	
+		}	
+		try{	
+			Exercise2 mainFunctions = new Exercise2(filePath);		
+			readSuccess = mainFunctions.readFile(filePath);				
+				
+			if(readSuccess){
+				Scanner input = new Scanner(System.in);	
+				char choice = 'X';
+				do
+				{
+					System.out.println("Menu"+ 
+						"\nA. Search " +
+						"\nB. Edit " +
+						"\nC. Print " +
+						"\nD. Reset " +
+						"\nE. Add Row " +	
+						"\nF. Sort " +	
+						"\nG. Exit " +	
+						"\nEnter Choice: " );
+
+					choice = input.next().charAt(0);
+					switch(Character.toUpperCase(choice))
+					{
+						case 'A': 
+							mainFunctions.search();
+							break;
+						
+						case 'B': 
+							mainFunctions.edit();
+							break;
+	
+						case 'C': 
+							mainFunctions.print();
+							break;
+						
+						case 'D': 
+							mainFunctions.reset();
+							break;
+						
+						case 'E': 
+							mainFunctions.add();
+							break;
+	
+						case 'F': 
+							mainFunctions.sort();
+							break;
+	
+						case 'G':	
+							 break;
+
+						default: 
+							System.out.println("Invalid Choice!");
+							 break;	
+					}		
+	
+				}while(Character.toUpperCase(choice) != 'G');		
+			}		
+		}	
+		catch(StringIndexOutOfBoundsException e){
+			System.out.println("Please provide full file path. Program will end");
+		}		
+	}
+
+	protected boolean readFile(String filePath){
+		String lineText = "", key = "", value = "";
+		int column = 0;		
+		boolean rowComplete = false, isKey = false;	
+
+			try{
+				FileInputStream inFile = new FileInputStream(filePath);
+				BufferedReader buffer = new BufferedReader(new InputStreamReader(inFile));
+				
+				while((lineText = buffer.readLine()) != null) {
+					column = 0;
+					isKey = true;
+					for(int i=0; i<lineText.length();i++) {
+						if (lineText.charAt(i) == '(') {
+							if (lineText.charAt(i+1) == '(' && lineText.charAt(i+2) == '('){
+								if(isKey) {
+									key = key + lineText.charAt(i);
+								} else {
+									value = value + lineText.charAt(i);
+								}	
+								i+=2;
+							} else { 
+								rowComplete = false;
+								isKey = true;
+							}
+						} else if (lineText.charAt(i) == ')') {
+							if ( i+2 < lineText.length() && lineText.charAt(i+1) == ')' && lineText.charAt(i+2) == ')'){
+								if(isKey) {
+									key = key + lineText.charAt(i);
+								} else {
+									value = value + lineText.charAt(i);
+								}	
+								i+=2;
+							} else { 
+								keyValueList.addRow(key, value, row+""+column);
+								key = "";
+								value = "";
+								column++;
+							}	
+						} else if (lineText.charAt(i) == ',') {
+							if (lineText.charAt(i+1) == ',' && lineText.charAt(i+2) == ','){
+								if(isKey) {
+									key = key + lineText.charAt(i);
+								   } else {
+									value = value + lineText.charAt(i);
+								   }	
+									i+=2;
+								} else { 
+									isKey = false;
+								}								
+						} else {
+						   if(isKey) {
+							key = key + lineText.charAt(i);
+						   } else {
+							value = value + lineText.charAt(i);
+						   }		
+						}								
+					}
+					row++;
+				}
+				
+				row--;
+				inFile.close();
+				buffer.close();
+
+				keyValueList.originalCopy();
+			}	
+			catch(IOException ie){
+				System.out.println("Error Reading file.");
+				return false;
+			}	
+			return true;
+	}
+
+	protected void search(){
+		String searchString = "";
+		System.out.println("Enter character(s) to search: ");
+		searchString = input.next();
+		keyValueList.search(searchString);	
+	}
+
+	protected void edit(){
+		boolean repeatBlock = false;
+		do{
+				System.out.println("Enter index (00,01,02..):)");
+				String index = input.next();
+				if(index.length()!=2 || !keyValueList.checkIndex(index))
+				{
+					System.out.println("Input Error. Kindly try again");
+					repeatBlock = true;
+				}
+				else
+				{ 	
+					repeatBlock=false;
+					int editChoice = 0;
+					do{										
+						try{
+							System.out.println("Edit:\t (1)Key (2)Value (3)Both");
+							editChoice = input.nextInt();
+							switch(editChoice){
+								case 1: editKey(index);
+									   keyValueList.writeToFile();
+									   break;
+								case 2: editValue(index);
+									   keyValueList.writeToFile();
+									   break;
+								case 3: editKey(index);
+									   editValue(index);
+									   keyValueList.writeToFile();
+									   break;		
+								default:  System.out.println("Enter 1, 2 or 3 only");
+										editChoice=0;
+										break;
+							}
+						}
+						catch(InputMismatchException ime){
+							System.out.println("Enter 1,2 or 3 only");
+							editChoice = 0;
+							input.next();
+			   			}
+					}while(editChoice==0);			
+				}
+		}while(repeatBlock);	
+	}
+
+	protected void editKey(String index){
+		boolean repeatBlock = false;
+		do{	
+			System.out.println("Enter new key:");
+			String newKey = input.next();
+			if(keyValueList.checkKey(newKey)){
+				System.out.println("Key already exists!");
+				repeatBlock = true;		
+			}
+			else{
+				keyValueList.editKey(index, newKey);
+				repeatBlock = false;
+			}	
+		}while(repeatBlock);		
+	}
+
+	protected void editValue(String index){
+		System.out.println("Enter new value:");
+		String newValue = input.next();
+		keyValueList.editValue(index, newValue);		
+	}
+
+
+	protected void print(){
+		keyValueList.printMap();	
+	}
+
+	protected void reset(){
+		keyValueList.writeOriginalData();
+	}
+
+	protected void add(){
+		boolean repeatBlock = false;
+		String key = "", value = "";
+
+		do{
+			try{				
+					System.out.println("Input number of key-value pair: ");
+					int newEntriesCount = input.nextInt();
+					if (newEntriesCount>0){
+						repeatBlock = false;
+						row++;
+						for(int i=0;i<newEntriesCount;i++){
+							do{															
+								System.out.println("Enter key for index["+row+""+i+"]: ");
+								key = input.next();
+								boolean keyExists = keyValueList.checkKey(key);
+								if(keyExists){
+									System.out.println("Key already exists. Enter a different key");
+									repeatBlock = true;	
+								}
+								else{
+									repeatBlock = false;
+									System.out.println("Enter value for index["+row+""+i+"]: ");
+									value = input.next();
+									keyValueList.addRow(key, value, row+""+i);
+								}									
+							}while(repeatBlock);
+						}
+						keyValueList.writeToFile();
+					}
+					else{
+						System.out.println("Only positive numbers are allowed");
+						repeatBlock = true;			
+					}
+				}
+				catch(InputMismatchException ime){
+					System.out.println("Only positive numbers are allowed");
+					input.next();
+					repeatBlock = true;
+				}
+		}while(repeatBlock);	
+	}
+
+	protected void sort(){
+		keyValueList.sort();
+	}
+}

@@ -1,0 +1,129 @@
+package exercise2;
+
+import java.util.*;
+//import java.io.*;
+
+public class DataMap{
+	private LinkedHashMap<String,String> dataMap;
+	private LinkedHashMap<String, String> tableFormatMap;
+	private LinkedHashMap<String, String> originalDataMap;	
+	private LinkedHashMap<String, String> originalFormatMap;
+	private FileData file;
+
+	protected DataMap(String filePath){
+		 dataMap = new LinkedHashMap<String,String>();
+		 tableFormatMap = new LinkedHashMap<String,String>();
+		 originalDataMap = new LinkedHashMap<String,String>();
+		 originalFormatMap = new LinkedHashMap<String,String>();
+		 file = new FileData(filePath);
+	}
+	
+	protected void originalCopy(){
+		originalDataMap.putAll(dataMap);
+		originalFormatMap.putAll(tableFormatMap);	
+	}
+
+	protected void addRow(String key, String value, String index){
+		dataMap.put(key, value);
+		tableFormatMap.put(index, key);		
+	}
+		
+	protected void printMap(){
+		String previousKey = "X";
+		for (Map.Entry<String, String> entry : tableFormatMap.entrySet()){
+			if(previousKey.equals("X") || previousKey.equals(entry.getKey().substring(0,1))){
+				System.out.print("("+entry.getValue()+","+dataMap.get(entry.getValue())+")");
+			}
+			else{
+				System.out.print("\n("+entry.getValue()+","+dataMap.get(entry.getValue())+")");
+			}	
+			previousKey=entry.getKey().substring(0,1);
+		}
+		System.out.print("\n");
+	}
+
+	protected void search(String searchString){
+		int keyOccurence = 0, valueOccurence = 0;		
+		for (Map.Entry<String, String> entry : tableFormatMap.entrySet() ){
+		    String key = entry.getValue(), value = dataMap.get(entry.getValue());
+			keyOccurence = 0;
+			valueOccurence = 0;
+
+			for(int i=0;i<key.length();i++){
+				if(i+searchString.length()<=key.length())
+				   {
+			 		 if(key.substring(i,i+searchString.length()).equals(searchString))
+					{
+						keyOccurence++;
+					}
+				   }	
+			}
+
+			for(int i=0;i<value.length();i++){
+				if(i+searchString.length()<=value.length())
+				   {
+			 		 if(value.substring(i,i+searchString.length()).equals(searchString))
+					{
+						valueOccurence++;
+					}
+				   }	
+			}
+		    System.out.println("["+entry.getKey()+"]: key = "+keyOccurence+" occurences, value = "+valueOccurence+" occurences");
+		}	
+	}
+		
+		
+	protected void editKey(String index, String newKey){
+		String prevKey = tableFormatMap.get(index);
+		String tempValue = dataMap.get(prevKey);
+		
+		tableFormatMap.put(index, newKey);
+		dataMap.remove(prevKey);
+		dataMap.put(newKey, tempValue);
+	}
+
+	protected void editValue(String index, String newValue){
+		dataMap.put(tableFormatMap.get(index), newValue);	
+	}
+
+	protected void sort(){
+		int keyCtr=0;
+		TreeMap<String, String> sortedMap = new TreeMap<String, String>();		
+		for (Map.Entry<String, String> entry : dataMap.entrySet() ){
+			sortedMap.put(entry.getKey()+""+entry.getValue(), entry.getKey());			
+		}
+		
+		HashMap<Integer, String> dummyFormatMap = new HashMap<Integer, String>();
+		for (Map.Entry<String, String> entry : sortedMap.entrySet() ){
+			dummyFormatMap.put(keyCtr++, entry.getValue());			
+		}
+		
+		keyCtr=0;
+		for (Map.Entry<String, String> entry : tableFormatMap.entrySet() ){			
+			entry.setValue(dummyFormatMap.get(keyCtr++));
+		}
+		
+		file.writeToFile(tableFormatMap, dataMap);
+	}	
+	
+	protected boolean checkKey(String key){
+		return dataMap.containsKey(key);	
+	}
+
+	protected boolean checkIndex(String index){
+		return tableFormatMap.containsKey(index);	
+	}
+
+	protected void writeToFile(){
+		file.writeToFile(tableFormatMap, dataMap);
+	}
+	
+	protected void writeOriginalData(){
+		file.writeToFile(originalFormatMap, originalDataMap);
+		tableFormatMap.clear();
+		dataMap.clear();
+		tableFormatMap.putAll(originalFormatMap);
+		dataMap.putAll(originalDataMap);
+	}
+		
+}
