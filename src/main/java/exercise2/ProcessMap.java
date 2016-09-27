@@ -11,10 +11,6 @@ public class ProcessMap{
 		keyValueList = new DataMap();
 	}	
 	
-	public DataMap getDataMapList(){
-		return keyValueList;	
-	}	
-	
 	public void addRow(String key, String value, String index){
 		keyValueList.addDataMap(key, value);
 		keyValueList.addTableFormat(index, key);
@@ -41,7 +37,7 @@ public class ProcessMap{
 		return keyValueList.getTableFormatMap().containsKey(index);	
 	}
 
-	public void originalCopy(){
+	protected void originalCopy(){
 		keyValueList.setOriginalDataMap(keyValueList.getDataMap());
 		keyValueList.setOriginalFormatMap(keyValueList.getTableFormatMap());
 	}
@@ -51,11 +47,11 @@ public class ProcessMap{
 		keyValueList.setTableFormatMap(keyValueList.getOriginalFormatMap());
 	}
 
-	public LinkedHashMap<String,String> getDataMap(){
+	protected LinkedHashMap<String,String> getDataMap(){
 		return keyValueList.getDataMap();
 	}
 
-	public LinkedHashMap<String,String> getTableFormatMap(){
+	protected LinkedHashMap<String,String> getTableFormatMap(){
 		return keyValueList.getTableFormatMap();
 	}
 
@@ -108,8 +104,7 @@ public class ProcessMap{
 		for (Map.Entry<String, String> entry : keyValueList.getTableFormatMap().entrySet()){
 			if(previousKey.equals("X") || previousKey.equals(entry.getKey().substring(0,1))){
 				strBuilder.append("("+entry.getValue()+","+dataMap.get(entry.getValue())+")");
-			}
-			else{
+			} else {
 				strBuilder.append("\n("+entry.getValue()+","+dataMap.get(entry.getValue())+")");
 			}	
 			previousKey=entry.getKey().substring(0,1);
