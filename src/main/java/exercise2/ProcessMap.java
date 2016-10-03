@@ -1,8 +1,7 @@
-package exercise2.service;
+package exercise2;
 
 import java.util.*;
 import org.apache.commons.lang3.text.StrBuilder;
-import exercise2.model.*;
 
 public class ProcessMap{
 	private DataMap keyValueList;	

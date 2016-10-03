@@ -1,7 +1,6 @@
-package exercise2.app;
+package exercise2;
 
 import java.util.*;
-import exercise2.service.*;
 
 public class Exercise2{	
 	private ProcessFile fileOperations;
